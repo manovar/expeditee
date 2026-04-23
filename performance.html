@@ -1,210 +1,347 @@
-import React, { useState } from 'react';
-import { Users, Smartphone, Globe, Layers, ArrowDown, ShieldAlert, Zap, ArrowRight, UserMinus, Calculator } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Admob Funnel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Tùy chỉnh màu sắc một chút cho giống bản React */
+        body { font-family: system-ui, -apple-system, sans-serif; }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-100 p-4 md:p-8">
 
-const AdmobTracker = () => {
-  const [newUsers, setNewUsers] = useState(1000);
-
-  // --- LOGIC TÍNH TOÁN USER FUNNEL ---
-  // 1. Splash: 100% User
-  const usersSplash = newUsers;
-  
-  // 2. Language: Rớt 20% từ Splash -> Còn 80%
-  const usersLang = Math.floor(usersSplash * 0.8);
-  
-  // 3. Onboarding: Rớt 15% từ Language -> Còn 85% của Language
-  const usersOnb = Math.floor(usersLang * 0.85);
-  
-  // 4. Onboarding Full: Rớt thêm 10% từ Onboarding (Giả định) -> Còn 90% của Onb
-  const usersOnbFull = Math.floor(usersOnb * 0.9);
-
-  // --- LOGIC TÍNH TOÁN REQUEST (User x Số màn hình) ---
-  const reqSplash = usersSplash * 1;
-  const reqLang = usersLang * 1;
-  const reqOnb = usersOnb * 4;
-  const reqOnbFull = usersOnbFull * 2;
-
-  const formatNumber = (num) => new Intl.NumberFormat('vi-VN').format(num);
-
-  const FunnelDrop = ({ dropRate, reason }) => (
-    <div className="flex justify-center my-2 relative">
-      <div className="flex flex-col items-center">
-        <div className="h-12 w-1 bg-gray-300"></div>
-        <ArrowDown size={24} className="text-gray-400 -mt-2" />
-      </div>
-      <div className="absolute left-1/2 ml-4 top-2 bg-red-50 border border-red-200 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 whitespace-nowrap">
-        <UserMinus size={14} /> Giảm {dropRate} ({reason})
-      </div>
-    </div>
-  );
-
-  const WaterfallBox = ({ hfId, apId }) => (
-    <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-      <div className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-        <Zap size={16} className="text-yellow-500" /> Luồng gọi Code (Dev chú ý)
-      </div>
-      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
-        <div className="bg-orange-100 border border-orange-400 text-orange-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
-          <div className="text-[10px] font-normal uppercase tracking-wider mb-1 text-orange-600">BƯỚC 1: ƯU TIÊN GỌI</div>
-          {hfId} (High Floor)
-        </div>
+    <div class="max-w-4xl mx-auto space-y-4">
         
-        <div className="flex flex-col items-center text-red-500 font-medium text-[11px]">
-          <span className="hidden sm:inline"><ArrowRight size={18} /></span>
-          <span className="sm:hidden"><ArrowDown size={18} /></span>
-          <span>Fail to Load</span>
+        <!-- Header & Input -->
+        <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="shield-alert" class="text-indigo-600 w-10 h-10"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-800">Tracking Admob Funnel</h1>
+                        <p class="text-slate-500 text-sm">Hiểu rõ sự khác biệt giữa Số User và Số Request Ads</p>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col bg-indigo-50 p-4 rounded-2xl border border-indigo-100 min-w-[300px]">
+                    <label class="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-2">
+                        <i data-lucide="users" class="w-5 h-5"></i> Nhập New Users (từ Firebase/GA):
+                    </label>
+                    <input
+                        type="number"
+                        id="newUsersInput"
+                        value="1000"
+                        min="0"
+                        class="w-full text-2xl font-black text-indigo-700 px-4 py-2 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 outline-none transition-all"
+                    />
+                </div>
+            </div>
         </div>
 
-        <div className="bg-green-100 border border-green-500 text-green-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
-          <div className="text-[10px] font-normal uppercase tracking-wider mb-1 text-green-600">BƯỚC 2: GỌI VÉT</div>
-          {apId} (All Prices)
-        </div>
-      </div>
-    </div>
-  );
-
-  const StepCard = ({ title, icon: Icon, usersAlive, screens, totalReq, hfId, apId, bgColor, borderColor, themeColor }) => (
-    <div className={`p-5 rounded-2xl border-2 shadow-sm ${bgColor} ${borderColor} transition-all hover:shadow-md relative overflow-hidden`}>
-      {/* Indicator bar */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${themeColor}`}></div>
-      
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 pl-2">
-        {/* Left: Step Info */}
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`p-2 rounded-lg shadow-sm bg-white border ${borderColor}`}>
-              <Icon size={24} className={themeColor.replace('bg-', 'text-')} />
-            </div>
-            <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-          </div>
-
-          {/* Math Explanation Box */}
-          <div className="flex flex-wrap items-center gap-2 text-sm font-medium bg-white p-3 rounded-xl border border-gray-100 shadow-sm inline-flex">
-            <div className="flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-1 rounded">
-              <Users size={16}/> {formatNumber(usersAlive)} User lọt vào
-            </div>
-            <span className="text-gray-400 font-bold">×</span>
-            <div className="flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-1 rounded">
-              <Smartphone size={16}/> {screens} Màn hình
-            </div>
-            <span className="text-gray-400 font-bold">=</span>
-            <div className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
-              <Calculator size={16}/> {formatNumber(totalReq)} Requests
-            </div>
-          </div>
-        </div>
-
-        {/* Right: Target Number */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 min-w-[200px] text-center flex flex-col justify-center relative">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-            Target Admob
-          </div>
-          <div className="text-4xl font-black mt-2" style={{ color: themeColor.replace('bg-', '') }}>
-            {formatNumber(totalReq)}
-          </div>
-          <div className="text-xs font-medium text-gray-500 mt-1">
-            = {hfId} + {apId}
-          </div>
-        </div>
-      </div>
-
-      <WaterfallBox hfId={hfId} apId={apId} />
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans">
-      <div className="max-w-4xl mx-auto space-y-4">
-        
-        {/* Header & Input */}
-        <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <ShieldAlert className="text-indigo-600" size={36} />
-              <div>
-                <h1 className="text-2xl font-bold text-slate-800">Tracking Admob Funnel</h1>
-                <p className="text-slate-500 text-sm">Hiểu rõ sự khác biệt giữa Số User và Số Request Ads</p>
-              </div>
-            </div>
+        <!-- Steps Container -->
+        <div class="space-y-1 mt-6">
             
-            <div className="flex flex-col bg-indigo-50 p-4 rounded-2xl border border-indigo-100 min-w-[300px]">
-              <label className="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-2">
-                <Users size={18} /> Nhập New Users (từ Firebase/GA):
-              </label>
-              <input
-                type="number"
-                value={newUsers}
-                onChange={(e) => setNewUsers(Number(e.target.value))}
-                className="w-full text-2xl font-black text-indigo-700 px-4 py-2 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 outline-none transition-all"
-                min="0"
-              />
+            <!-- STEP 1: SPLASH -->
+            <div class="p-5 rounded-2xl border-2 shadow-sm bg-white border-blue-100 transition-all hover:shadow-md relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-500"></div>
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 pl-2">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 rounded-lg shadow-sm bg-white border border-blue-100">
+                                <i data-lucide="smartphone" class="text-blue-500 w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">1. Inter Splash</h3>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 text-sm font-medium bg-white p-3 rounded-xl border border-gray-100 shadow-sm inline-flex">
+                            <div class="flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                                <i data-lucide="users" class="w-4 h-4"></i> <span class="val-users-splash">0</span> User lọt vào
+                            </div>
+                            <span class="text-gray-400 font-bold">×</span>
+                            <div class="flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-1 rounded">
+                                <i data-lucide="smartphone" class="w-4 h-4"></i> 1 Màn hình
+                            </div>
+                            <span class="text-gray-400 font-bold">=</span>
+                            <div class="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                                <i data-lucide="calculator" class="w-4 h-4"></i> <span class="val-req-splash">0</span> Requests
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 min-w-[200px] text-center flex flex-col justify-center relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Target Admob</div>
+                        <div class="text-4xl font-black mt-2 text-blue-500 val-req-splash">0</div>
+                        <div class="text-xs font-medium text-gray-500 mt-1">= I001 + I002</div>
+                    </div>
+                </div>
+                <!-- Waterfall Box -->
+                <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="zap" class="text-yellow-500 w-4 h-4"></i> Luồng gọi Code (Dev chú ý)
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                        <div class="bg-orange-100 border border-orange-400 text-orange-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-orange-600">BƯỚC 1: ƯU TIÊN GỌI</div>I001 (High Floor)
+                        </div>
+                        <div class="flex flex-col items-center text-red-500 font-medium text-[11px]">
+                            <i data-lucide="arrow-right" class="hidden sm:inline w-5 h-5"></i>
+                            <i data-lucide="arrow-down" class="sm:hidden w-5 h-5"></i>
+                            <span>Fail to Load</span>
+                        </div>
+                        <div class="bg-green-100 border border-green-500 text-green-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-green-600">BƯỚC 2: GỌI VÉT</div>I002 (All Prices)
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
+
+            <!-- DROP FUNNEL 1 -->
+            <div class="flex justify-center my-2 relative">
+                <div class="flex flex-col items-center">
+                    <div class="h-12 w-1 bg-gray-300"></div>
+                    <i data-lucide="arrow-down" class="text-gray-400 -mt-2 w-6 h-6"></i>
+                </div>
+                <div class="absolute left-1/2 ml-4 top-2 bg-red-50 border border-red-200 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 whitespace-nowrap">
+                    <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> Giảm 20% (Thoát app sớm, rớt mạng)
+                </div>
+            </div>
+
+            <!-- STEP 2: LANGUAGE -->
+            <div class="p-5 rounded-2xl border-2 shadow-sm bg-white border-teal-100 transition-all hover:shadow-md relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-teal-500"></div>
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 pl-2">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 rounded-lg shadow-sm bg-white border border-teal-100">
+                                <i data-lucide="globe" class="text-teal-500 w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">2. Màn hình Language</h3>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 text-sm font-medium bg-white p-3 rounded-xl border border-gray-100 shadow-sm inline-flex">
+                            <div class="flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                                <i data-lucide="users" class="w-4 h-4"></i> <span class="val-users-lang">0</span> User lọt vào
+                            </div>
+                            <span class="text-gray-400 font-bold">×</span>
+                            <div class="flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-1 rounded">
+                                <i data-lucide="smartphone" class="w-4 h-4"></i> 1 Màn hình
+                            </div>
+                            <span class="text-gray-400 font-bold">=</span>
+                            <div class="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                                <i data-lucide="calculator" class="w-4 h-4"></i> <span class="val-req-lang">0</span> Requests
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 min-w-[200px] text-center flex flex-col justify-center relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Target Admob</div>
+                        <div class="text-4xl font-black mt-2 text-teal-500 val-req-lang">0</div>
+                        <div class="text-xs font-medium text-gray-500 mt-1">= N007/N005 + N008/N006</div>
+                    </div>
+                </div>
+                <!-- Waterfall Box -->
+                <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="zap" class="text-yellow-500 w-4 h-4"></i> Luồng gọi Code (Dev chú ý)
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                        <div class="bg-orange-100 border border-orange-400 text-orange-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-orange-600">BƯỚC 1: ƯU TIÊN GỌI</div>N007 / N005
+                        </div>
+                        <div class="flex flex-col items-center text-red-500 font-medium text-[11px]">
+                            <i data-lucide="arrow-right" class="hidden sm:inline w-5 h-5"></i>
+                            <i data-lucide="arrow-down" class="sm:hidden w-5 h-5"></i>
+                            <span>Fail to Load</span>
+                        </div>
+                        <div class="bg-green-100 border border-green-500 text-green-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-green-600">BƯỚC 2: GỌI VÉT</div>N008 / N006
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DROP FUNNEL 2 -->
+            <div class="flex justify-center my-2 relative">
+                <div class="flex flex-col items-center">
+                    <div class="h-12 w-1 bg-gray-300"></div>
+                    <i data-lucide="arrow-down" class="text-gray-400 -mt-2 w-6 h-6"></i>
+                </div>
+                <div class="absolute left-1/2 ml-4 top-2 bg-red-50 border border-red-200 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 whitespace-nowrap">
+                    <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> Giảm 15% (Bỏ qua, không ấn Next)
+                </div>
+            </div>
+
+            <!-- STEP 3: ONBOARDING -->
+            <div class="p-5 rounded-2xl border-2 shadow-sm bg-white border-purple-100 transition-all hover:shadow-md relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-purple-500"></div>
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 pl-2">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 rounded-lg shadow-sm bg-white border border-purple-100">
+                                <i data-lucide="layers" class="text-purple-500 w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">3. Onboarding Thường</h3>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 text-sm font-medium bg-white p-3 rounded-xl border border-gray-100 shadow-sm inline-flex">
+                            <div class="flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                                <i data-lucide="users" class="w-4 h-4"></i> <span class="val-users-onb">0</span> User lọt vào
+                            </div>
+                            <span class="text-gray-400 font-bold">×</span>
+                            <div class="flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-1 rounded">
+                                <i data-lucide="smartphone" class="w-4 h-4"></i> 4 Màn hình
+                            </div>
+                            <span class="text-gray-400 font-bold">=</span>
+                            <div class="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                                <i data-lucide="calculator" class="w-4 h-4"></i> <span class="val-req-onb">0</span> Requests
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 min-w-[200px] text-center flex flex-col justify-center relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Target Admob</div>
+                        <div class="text-4xl font-black mt-2 text-purple-500 val-req-onb">0</div>
+                        <div class="text-xs font-medium text-gray-500 mt-1">= N009 + N010</div>
+                    </div>
+                </div>
+                <!-- Waterfall Box -->
+                <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="zap" class="text-yellow-500 w-4 h-4"></i> Luồng gọi Code (Dev chú ý)
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                        <div class="bg-orange-100 border border-orange-400 text-orange-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-orange-600">BƯỚC 1: ƯU TIÊN GỌI</div>N009 (High Floor)
+                        </div>
+                        <div class="flex flex-col items-center text-red-500 font-medium text-[11px]">
+                            <i data-lucide="arrow-right" class="hidden sm:inline w-5 h-5"></i>
+                            <i data-lucide="arrow-down" class="sm:hidden w-5 h-5"></i>
+                            <span>Fail to Load</span>
+                        </div>
+                        <div class="bg-green-100 border border-green-500 text-green-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-green-600">BƯỚC 2: GỌI VÉT</div>N010 (All Prices)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DROP FUNNEL 3 -->
+            <div class="flex justify-center my-2 relative">
+                <div class="flex flex-col items-center">
+                    <div class="h-12 w-1 bg-gray-300"></div>
+                    <i data-lucide="arrow-down" class="text-gray-400 -mt-2 w-6 h-6"></i>
+                </div>
+                <div class="absolute left-1/2 ml-4 top-2 bg-red-50 border border-red-200 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 whitespace-nowrap">
+                    <i data-lucide="user-minus" class="w-3.5 h-3.5"></i> Giảm 10% (Thoát giữa chừng Onb)
+                </div>
+            </div>
+
+            <!-- STEP 4: ONBOARDING FULL -->
+            <div class="p-5 rounded-2xl border-2 shadow-sm bg-white border-pink-100 transition-all hover:shadow-md relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-pink-500"></div>
+                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4 pl-2">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 rounded-lg shadow-sm bg-white border border-pink-100">
+                                <i data-lucide="layers" class="text-pink-500 w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">4. Onboarding Native Full</h3>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2 text-sm font-medium bg-white p-3 rounded-xl border border-gray-100 shadow-sm inline-flex">
+                            <div class="flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-1 rounded">
+                                <i data-lucide="users" class="w-4 h-4"></i> <span class="val-users-onbfull">0</span> User lọt vào
+                            </div>
+                            <span class="text-gray-400 font-bold">×</span>
+                            <div class="flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-1 rounded">
+                                <i data-lucide="smartphone" class="w-4 h-4"></i> 2 Màn hình
+                            </div>
+                            <span class="text-gray-400 font-bold">=</span>
+                            <div class="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                                <i data-lucide="calculator" class="w-4 h-4"></i> <span class="val-req-onbfull">0</span> Requests
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 min-w-[200px] text-center flex flex-col justify-center relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">Target Admob</div>
+                        <div class="text-4xl font-black mt-2 text-pink-500 val-req-onbfull">0</div>
+                        <div class="text-xs font-medium text-gray-500 mt-1">= N013 + N014</div>
+                    </div>
+                </div>
+                <!-- Waterfall Box -->
+                <div class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div class="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                        <i data-lucide="zap" class="text-yellow-500 w-4 h-4"></i> Luồng gọi Code (Dev chú ý)
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+                        <div class="bg-orange-100 border border-orange-400 text-orange-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-orange-600">BƯỚC 1: ƯU TIÊN GỌI</div>N013 (High Floor)
+                        </div>
+                        <div class="flex flex-col items-center text-red-500 font-medium text-[11px]">
+                            <i data-lucide="arrow-right" class="hidden sm:inline w-5 h-5"></i>
+                            <i data-lucide="arrow-down" class="sm:hidden w-5 h-5"></i>
+                            <span>Fail to Load</span>
+                        </div>
+                        <div class="bg-green-100 border border-green-500 text-green-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+                            <div class="text-[10px] font-normal uppercase tracking-wider mb-1 text-green-600">BƯỚC 2: GỌI VÉT</div>N014 (All Prices)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-
-        {/* Steps */}
-        <div className="space-y-1 mt-6">
-          <StepCard
-            title="1. Inter Splash"
-            icon={Smartphone}
-            usersAlive={usersSplash}
-            screens={1}
-            totalReq={reqSplash}
-            hfId="I001"
-            apId="I002"
-            bgColor="bg-white"
-            borderColor="border-blue-100"
-            themeColor="bg-blue-500"
-          />
-
-          <FunnelDrop dropRate="20%" reason="Thoát app sớm, rớt mạng" />
-
-          <StepCard
-            title="2. Màn hình Language"
-            icon={Globe}
-            usersAlive={usersLang}
-            screens={1}
-            totalReq={reqLang}
-            hfId="N007 / N005"
-            apId="N008 / N006"
-            bgColor="bg-white"
-            borderColor="border-teal-100"
-            themeColor="bg-teal-500"
-          />
-
-          <FunnelDrop dropRate="15%" reason="Bỏ qua, không ấn Next" />
-
-          <StepCard
-            title="3. Onboarding Thường"
-            icon={Layers}
-            usersAlive={usersOnb}
-            screens={4}
-            totalReq={reqOnb}
-            hfId="N009"
-            apId="N010"
-            bgColor="bg-white"
-            borderColor="border-purple-100"
-            themeColor="bg-purple-500"
-          />
-
-          <FunnelDrop dropRate="10%" reason="Thoát giữa chừng Onboarding" />
-
-          <StepCard
-            title="4. Onboarding Native Full"
-            icon={Layers}
-            usersAlive={usersOnbFull}
-            screens={2}
-            totalReq={reqOnbFull}
-            hfId="N013"
-            apId="N014"
-            bgColor="bg-white"
-            borderColor="border-pink-100"
-            themeColor="bg-pink-500"
-          />
-        </div>
-
-      </div>
     </div>
-  );
-};
 
-export default AdmobTracker;
+    <!-- Script xử lý Logic Tính Toán -->
+    <script>
+        // Khởi tạo Icon
+        lucide.createIcons();
+
+        // Hàm format số (VD: 1000 -> 1.000)
+        const formatNumber = (num) => new Intl.NumberFormat('vi-VN').format(num);
+
+        // Hàm cập nhật tất cả DOM có chứa class chỉ định
+        const updateDOM = (className, value) => {
+            const elements = document.querySelectorAll(className);
+            elements.forEach(el => {
+                el.innerText = formatNumber(value);
+            });
+        };
+
+        const calculateFunnel = () => {
+            const inputVal = document.getElementById('newUsersInput').value;
+            let newUsers = parseInt(inputVal);
+            if (isNaN(newUsers) || newUsers < 0) newUsers = 0;
+
+            // --- LOGIC TÍNH TOÁN USER FUNNEL ---
+            const usersSplash = newUsers;
+            const usersLang = Math.floor(usersSplash * 0.8);
+            const usersOnb = Math.floor(usersLang * 0.85);
+            const usersOnbFull = Math.floor(usersOnb * 0.9);
+
+            // --- LOGIC TÍNH TOÁN REQUEST (User x Số màn hình) ---
+            const reqSplash = usersSplash * 1;
+            const reqLang = usersLang * 1;
+            const reqOnb = usersOnb * 4;
+            const reqOnbFull = usersOnbFull * 2;
+
+            // --- CẬP NHẬT GIAO DIỆN ---
+            updateDOM('.val-users-splash', usersSplash);
+            updateDOM('.val-req-splash', reqSplash);
+
+            updateDOM('.val-users-lang', usersLang);
+            updateDOM('.val-req-lang', reqLang);
+
+            updateDOM('.val-users-onb', usersOnb);
+            updateDOM('.val-req-onb', reqOnb);
+
+            updateDOM('.val-users-onbfull', usersOnbFull);
+            updateDOM('.val-req-onbfull', reqOnbFull);
+        };
+
+        // Lắng nghe sự kiện khi người dùng gõ vào ô Input
+        document.getElementById('newUsersInput').addEventListener('input', calculateFunnel);
+
+        // Chạy lần đầu lúc load trang
+        calculateFunnel();
+    </script>
+</body>
+</html>
