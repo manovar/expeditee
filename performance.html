@@ -1,0 +1,210 @@
+import React, { useState } from 'react';
+import { Users, Smartphone, Globe, Layers, ArrowDown, ShieldAlert, Zap, ArrowRight, UserMinus, Calculator } from 'lucide-react';
+
+const AdmobTracker = () => {
+  const [newUsers, setNewUsers] = useState(1000);
+
+  // --- LOGIC TÍNH TOÁN USER FUNNEL ---
+  // 1. Splash: 100% User
+  const usersSplash = newUsers;
+  
+  // 2. Language: Rớt 20% từ Splash -> Còn 80%
+  const usersLang = Math.floor(usersSplash * 0.8);
+  
+  // 3. Onboarding: Rớt 15% từ Language -> Còn 85% của Language
+  const usersOnb = Math.floor(usersLang * 0.85);
+  
+  // 4. Onboarding Full: Rớt thêm 10% từ Onboarding (Giả định) -> Còn 90% của Onb
+  const usersOnbFull = Math.floor(usersOnb * 0.9);
+
+  // --- LOGIC TÍNH TOÁN REQUEST (User x Số màn hình) ---
+  const reqSplash = usersSplash * 1;
+  const reqLang = usersLang * 1;
+  const reqOnb = usersOnb * 4;
+  const reqOnbFull = usersOnbFull * 2;
+
+  const formatNumber = (num) => new Intl.NumberFormat('vi-VN').format(num);
+
+  const FunnelDrop = ({ dropRate, reason }) => (
+    <div className="flex justify-center my-2 relative">
+      <div className="flex flex-col items-center">
+        <div className="h-12 w-1 bg-gray-300"></div>
+        <ArrowDown size={24} className="text-gray-400 -mt-2" />
+      </div>
+      <div className="absolute left-1/2 ml-4 top-2 bg-red-50 border border-red-200 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1 whitespace-nowrap">
+        <UserMinus size={14} /> Giảm {dropRate} ({reason})
+      </div>
+    </div>
+  );
+
+  const WaterfallBox = ({ hfId, apId }) => (
+    <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+      <div className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+        <Zap size={16} className="text-yellow-500" /> Luồng gọi Code (Dev chú ý)
+      </div>
+      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+        <div className="bg-orange-100 border border-orange-400 text-orange-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+          <div className="text-[10px] font-normal uppercase tracking-wider mb-1 text-orange-600">BƯỚC 1: ƯU TIÊN GỌI</div>
+          {hfId} (High Floor)
+        </div>
+        
+        <div className="flex flex-col items-center text-red-500 font-medium text-[11px]">
+          <span className="hidden sm:inline"><ArrowRight size={18} /></span>
+          <span className="sm:hidden"><ArrowDown size={18} /></span>
+          <span>Fail to Load</span>
+        </div>
+
+        <div className="bg-green-100 border border-green-500 text-green-800 px-4 py-2 rounded-lg font-bold flex-1 text-center w-full sm:w-auto">
+          <div className="text-[10px] font-normal uppercase tracking-wider mb-1 text-green-600">BƯỚC 2: GỌI VÉT</div>
+          {apId} (All Prices)
+        </div>
+      </div>
+    </div>
+  );
+
+  const StepCard = ({ title, icon: Icon, usersAlive, screens, totalReq, hfId, apId, bgColor, borderColor, themeColor }) => (
+    <div className={`p-5 rounded-2xl border-2 shadow-sm ${bgColor} ${borderColor} transition-all hover:shadow-md relative overflow-hidden`}>
+      {/* Indicator bar */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${themeColor}`}></div>
+      
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 pl-2">
+        {/* Left: Step Info */}
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-4">
+            <div className={`p-2 rounded-lg shadow-sm bg-white border ${borderColor}`}>
+              <Icon size={24} className={themeColor.replace('bg-', 'text-')} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+          </div>
+
+          {/* Math Explanation Box */}
+          <div className="flex flex-wrap items-center gap-2 text-sm font-medium bg-white p-3 rounded-xl border border-gray-100 shadow-sm inline-flex">
+            <div className="flex items-center gap-1 text-blue-700 bg-blue-50 px-2 py-1 rounded">
+              <Users size={16}/> {formatNumber(usersAlive)} User lọt vào
+            </div>
+            <span className="text-gray-400 font-bold">×</span>
+            <div className="flex items-center gap-1 text-purple-700 bg-purple-50 px-2 py-1 rounded">
+              <Smartphone size={16}/> {screens} Màn hình
+            </div>
+            <span className="text-gray-400 font-bold">=</span>
+            <div className="flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+              <Calculator size={16}/> {formatNumber(totalReq)} Requests
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Target Number */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 min-w-[200px] text-center flex flex-col justify-center relative">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+            Target Admob
+          </div>
+          <div className="text-4xl font-black mt-2" style={{ color: themeColor.replace('bg-', '') }}>
+            {formatNumber(totalReq)}
+          </div>
+          <div className="text-xs font-medium text-gray-500 mt-1">
+            = {hfId} + {apId}
+          </div>
+        </div>
+      </div>
+
+      <WaterfallBox hfId={hfId} apId={apId} />
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans">
+      <div className="max-w-4xl mx-auto space-y-4">
+        
+        {/* Header & Input */}
+        <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <ShieldAlert className="text-indigo-600" size={36} />
+              <div>
+                <h1 className="text-2xl font-bold text-slate-800">Tracking Admob Funnel</h1>
+                <p className="text-slate-500 text-sm">Hiểu rõ sự khác biệt giữa Số User và Số Request Ads</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col bg-indigo-50 p-4 rounded-2xl border border-indigo-100 min-w-[300px]">
+              <label className="text-sm font-bold text-indigo-900 flex items-center gap-2 mb-2">
+                <Users size={18} /> Nhập New Users (từ Firebase/GA):
+              </label>
+              <input
+                type="number"
+                value={newUsers}
+                onChange={(e) => setNewUsers(Number(e.target.value))}
+                className="w-full text-2xl font-black text-indigo-700 px-4 py-2 rounded-xl border-2 border-indigo-200 focus:border-indigo-500 outline-none transition-all"
+                min="0"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Steps */}
+        <div className="space-y-1 mt-6">
+          <StepCard
+            title="1. Inter Splash"
+            icon={Smartphone}
+            usersAlive={usersSplash}
+            screens={1}
+            totalReq={reqSplash}
+            hfId="I001"
+            apId="I002"
+            bgColor="bg-white"
+            borderColor="border-blue-100"
+            themeColor="bg-blue-500"
+          />
+
+          <FunnelDrop dropRate="20%" reason="Thoát app sớm, rớt mạng" />
+
+          <StepCard
+            title="2. Màn hình Language"
+            icon={Globe}
+            usersAlive={usersLang}
+            screens={1}
+            totalReq={reqLang}
+            hfId="N007 / N005"
+            apId="N008 / N006"
+            bgColor="bg-white"
+            borderColor="border-teal-100"
+            themeColor="bg-teal-500"
+          />
+
+          <FunnelDrop dropRate="15%" reason="Bỏ qua, không ấn Next" />
+
+          <StepCard
+            title="3. Onboarding Thường"
+            icon={Layers}
+            usersAlive={usersOnb}
+            screens={4}
+            totalReq={reqOnb}
+            hfId="N009"
+            apId="N010"
+            bgColor="bg-white"
+            borderColor="border-purple-100"
+            themeColor="bg-purple-500"
+          />
+
+          <FunnelDrop dropRate="10%" reason="Thoát giữa chừng Onboarding" />
+
+          <StepCard
+            title="4. Onboarding Native Full"
+            icon={Layers}
+            usersAlive={usersOnbFull}
+            screens={2}
+            totalReq={reqOnbFull}
+            hfId="N013"
+            apId="N014"
+            bgColor="bg-white"
+            borderColor="border-pink-100"
+            themeColor="bg-pink-500"
+          />
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default AdmobTracker;
