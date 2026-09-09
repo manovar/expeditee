@@ -4,6 +4,8 @@ google.com, pub-9026350637292449, DIRECT, f08c47fec0942fa0
 #AdMob
 google.com, pub-9135490917790331, DIRECT, f08c47fec0942fa0
 
+vungle.com, 675fff0b09fe2d0011d42308, DIRECT, c107d686becd2d77
+
 #Meta
 facebook.com, 1385814095192798, DIRECT, c3e20eee3f780d68
 
